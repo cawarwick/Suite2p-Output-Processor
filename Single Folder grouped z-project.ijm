@@ -20,6 +20,10 @@ for (i=0; i<list.length; i++) {
 	saveAs("Tiff", output);
 	close();
 	}
-	print("Run Finished");
-	runMacro("Garbage");
-}
+File.openSequence(SavePath);
+midparent=SavePath+"Average_merged";
+print("merged file save location:", midparent);
+saveAs("Tiff", midparent);
+close("*");
+print("Run Finished");
+runMacro("Garbage");
