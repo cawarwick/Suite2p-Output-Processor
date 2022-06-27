@@ -5,17 +5,19 @@ ________________________________________________________________________________
 Things to do before using are the same as here: https://github.com/cawarwick/ThorStackSplitter
 
 _____________________________________________________________________________________________
-For Suite2p stack averaging.ijm:
+For Suite2p stack averaging:
 
 User provided information for running the macro is located at the top of the macro when opened in FIJI. These are the following variables you will need to change to run the macro:
 
-ParentD="C:/Users/warwickc/Desktop/Suite2p run/suite2p/"; //the directory of your suite2p folder which contains stabilized files for averaging. This is specific for Suite2p, make sure it is the Parent Suite2p directory NOT a specific plane. It expects to see a series of folders in this ParentD labeled "plane0", "plane1", etc exactly as Suite2p creates them
+ParentD = "C:/Users/warwickc/Desktop/Suite2p run/suite2p/"; //the directory of your suite2p folder which contains stabilized files for averaging. This is specific for Suite2p, make sure it is the Parent Suite2p directory NOT a specific plane. It expects to see a series of folders in this ParentD labeled "plane0", "plane1", etc exactly as Suite2p creates them
 
-planes=3; //Number of Z planes
+planes = 3; //Number of Z planes
 
-avg=8; //grouped Z amount average. Make sure they are divisible this isn't smart enough to fix that yet. Simple fixes include running your Suite2p batch in a divisible amount, e.g. if you need to divide by 7 then make your batches in Suite2p divisible by 7.
+avg = 8; //grouped Z amount average. New version will accomodate non-divisbles gracefully by cutting off frames from the final file in the image. 
 
-Once run this will average each of the channel 0 (green) files in the directory, create a new directory with the individual averaged files and then merge the files into one tiff file and save it in the "suite2p\plane0\" rather than with the rest of the original green channel tiffs to make it possible to run this macro multiple times at different averaging without moving files around. e.g. you want a nice reference image to select ROIs with so you make a 40x average and then you make a 1hz average ~5-10x for analysis.
+dZ = 1 or 0 : This function will create a derivative image of the resultant averaged file if desired. Set to 1 to enable, 0 to disable. It will reopen the merged file, make a Z-derivative with 1.0 smoothing, increase contrast, and downscale to 8-bit images to save space.
+
+Once run, this will average each of the channel 0 (green) files in the directory, create a new directory with the individual averaged files and then merge the files into one tiff file and save it in the "suite2p\plane0\" rather than with the rest of the original green channel tiffs to make it possible to run this macro multiple times at different averaging without moving files around. e.g. you want a nice reference image to select ROIs with so you make a 40x average and then you make a 1hz average for analysis.
 This is what the output looks like as an example
 ![image](https://user-images.githubusercontent.com/81972652/175789927-ab2632f5-7bf5-4d2b-908c-4b064971b572.png)
 
