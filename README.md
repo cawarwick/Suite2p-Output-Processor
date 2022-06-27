@@ -4,6 +4,11 @@ ________________________________________________________________________________
 
 Things to do before using are the same as here: https://github.com/cawarwick/ThorStackSplitter
 
+If using the derivative function there are additional things to install:
+
+1. Install the imagesceince plugin according to these instructions: https://imagej.net/libs/imagescience
+
+2. I made a custom LUT for that which you'll need to install (32_colors edit.lut). Or just comment out that line and it'll remain grayscale.
 _____________________________________________________________________________________________
 For Suite2p stack averaging:
 
