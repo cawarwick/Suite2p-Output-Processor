@@ -1,4 +1,4 @@
-# Grouped-Z-projector
+# Suite2p Output Processor
 Make a grouped-Z projection of files too large to fit into ram. If you want to do some averaging, but the entire recording is too large to fit into RAM, you can take the Suite2p output (which is a bunch of smaller TIFFs) and this will open each of the TIFFs, average them, and then resave them. This significantly reduces the size of the data for manual viewing and doesn't require you to load the entire recording into RAM to do the grouped Z function. This is mostly just for visualization and/or ROI selection/refinement. This will also create some typical projections for assist in ROI generation.
 _____________________________________________________________________________________________
 
