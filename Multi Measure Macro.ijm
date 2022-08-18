@@ -9,7 +9,7 @@ for(p=0; p<planes; p++) {
 	runMacro("Garbage");
 	list=getFileList(InputPath);
 	print("Number of files in folder:",list.length);
-	ROIs=ParentD+"plane"+p+"/RoiSet.zip";
+	ROIs=ParentD+"plane"+p+"/Plane"+p+" RoiSet.zip";
 	roiManager("Open", ROIs);
 	for (i=0; i<list.length; i++) {
 		print("Name of file:",list[i]);
