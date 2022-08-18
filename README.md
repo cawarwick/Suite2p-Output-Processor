@@ -55,6 +55,10 @@ Use this macro once you have made your ROIs. Place your ROI zip file (saved from
 
 **planes=3**; //Number of Z planes; 
 
+Once run it will place a CSV with the mean values in the appropriate folder
+
+![image](https://user-images.githubusercontent.com/81972652/185489545-1c6981c6-2441-4caa-860f-9800ead6991f.png)
+
 _______________________________________________________________________________________
 ## For Grouped z-project Single folder.ijm:
 
