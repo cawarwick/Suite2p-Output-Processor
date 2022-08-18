@@ -42,8 +42,21 @@ This is what the output looks like as an example
 
 ![image](https://user-images.githubusercontent.com/81972652/185458490-ff725f89-f6df-4f46-a1f5-db3cbec648c0.png)
 
+________________________________________________________________________________________
+# Multi Measure Macro
+
+Use this macro once you have made your ROIs. Place your ROI zip file (saved from FIJI) into the subfolder of the appropriate folder, e.g. Plane0's ROIs go into the plane0 folder as shown below. Repeat for all planes. Of note, the files need to named consistently as Plane0 RoiSet.zip, Plane1 RoiSet.zip, Plane2 RoiSet.zip, etc as it needs to know the exact name to open the ROI zip file.
+
+![image](https://user-images.githubusercontent.com/81972652/185488137-fa0a0eeb-d08a-4e26-84e2-7c82f44e23df.png)
+
+## Inputs:
+
+**ParentD**="C:/Users/Computer/Desktop/suite2p/" //where the files to process are located
+
+**planes=3**; //Number of Z planes; 
+
 _______________________________________________________________________________________
-For Grouped z-project Single folder.ijm:
+## For Grouped z-project Single folder.ijm:
 
 This macro is for processing a single folder rather than a directory of Suite2p stabilized files.
 
