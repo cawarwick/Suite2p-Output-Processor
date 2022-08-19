@@ -29,10 +29,10 @@ for(p=0; p<planes; p++) {
 		open(npath);
 		//checks for a residual file, opens, and the concatenates it to the opened file
 		if (File.exists(ResidualD+"/residual.tif")) {
-			open(ResidualD);
+			open(ResidualD+"/residual.tif");
 			concat="  image1=residual.tif image2="+file;
 			print(concat);
-			run("Concatenate...", "  image1=residual.tif image2=file000_chan0.tif");
+			run("Concatenate...", concat);
 			rename(file);
 			File.delete(ResidualD+"/residual.tif");		
 			}
@@ -220,6 +220,7 @@ if (fullmerge==1) {
 	close();	
 }
 }
+File.delete(ResidualD+"/residual.tif");		
 runMacro("Garbage");
 
 //for each red channel plane
@@ -237,10 +238,10 @@ if (RG==1) {
 			open(npath);
 			//checks for a residual file, opens, and the concatenates it to the opened file
 			if (File.exists(ResidualD+"/residual.tif")) {
-				open(ResidualD);
+				open(ResidualD+"/residual.tif");
 				concat="  image1=residual.tif image2="+file;
 				print(concat);
-				run("Concatenate...", "  image1=residual.tif image2=file000_chan0.tif");
+				run("Concatenate...", concat);
 				rename(file);
 				File.delete(ResidualD+"/residual.tif");		
 				}
@@ -363,7 +364,7 @@ if (RG==1) {
 			path=ParentD+"plane"+p+"/"+"Plane"+p+" "+"structural avg.tif";
 			if((File.exists(output))){
 				File.delete(path);
-				}		
+				}
 	}
 for(p=0; p<planes; p++) {
 	npath=ParentD+"plane"+p+"Ref.tif";
