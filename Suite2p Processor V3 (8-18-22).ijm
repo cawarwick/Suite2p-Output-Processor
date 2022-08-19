@@ -1,7 +1,7 @@
 //Before using make sure to copy the Garbage.ijm macro into the macro folder in order to remove the memory leaks
 //save location. Need to change this depending on the computer and intention
-ParentD="E:/Itch Project/#462 1-5-22 (Control CQ+4880)/Time Lapse/Split Files for stabilization/suite2p/"; //the directory of your suite2p folder which contains stabilized files for averaging
-planes=4; //Number of Z planes;
+ParentD="E:/Itch Project/#468 2-1-22 (Nalf 4880)/Final FOV/Split Files/FOV2/suite2p/"; //the directory of your suite2p folder which contains stabilized files for averaging
+planes=5; //Number of Z planes;
 avg=20; //grouped Z amount average.
 dzt=1; //set this to 1 to make a derivative image of the average image. Otherwise set it to 0 to not. If using, it applies a custom LUT which you'll need to install.
 summary=1; //set this to 1 to make summary images
@@ -64,6 +64,7 @@ for(p=0; p<planes; p++) {
 		mid="projection=[Average Intensity] group="+avg;
 		run("Grouped Z Project...", mid);
 		close("F*");
+		close("S*");
 		
 		//Saving the split stacks to the hardrive
 		SaveD=ParentD+"plane"+p+"/"+avg+"x avg/";
@@ -272,7 +273,7 @@ if (RG==1) {
 			//actually run the grouped Z projection
 			mid="projection=[Average Intensity] group="+avg;
 			run("Grouped Z Project...", mid);
-			close("F*");
+			close("S*");
 			
 			//Saving the split stacks to the hardrive
 			SaveD=ParentD+"plane"+p+"/"+avg+"x avg Red/";
@@ -377,5 +378,6 @@ saveAs("Tiff", refimg);
 close("*");
 }
 //at this point it's finished all planes and images and this removes the directory it created
+	File.delete(ResidualD+"/residual.tif");
 	File.delete(ResidualD);
 	print("All planes processed");
