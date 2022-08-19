@@ -1,13 +1,13 @@
 //Before using make sure to copy the Garbage.ijm macro into the macro folder in order to remove the memory leaks
 //save location. Need to change this depending on the computer and intention
-ParentD="E:/Itch Project/#468 2-1-22 (Nalf 4880)/Final FOV/Split Files/FOV2/suite2p/"; //the directory of your suite2p folder which contains stabilized files for averaging
-planes=5; //Number of Z planes;
-avg=20; //grouped Z amount average.
+ParentD="C:/Users/warwickc/Desktop/Suite2p run/suite2p/"; //the directory of your suite2p folder which contains stabilized files for averaging
+planes=2; //Number of Z planes;
+avg=10; //grouped Z amount average.
 dzt=1; //set this to 1 to make a derivative image of the average image. Otherwise set it to 0 to not. If using, it applies a custom LUT which you'll need to install.
 summary=1; //set this to 1 to make summary images
-SDp=80; //number of frames to take of the average for the SD projection, e.g. 40*10= 400frame projection
-maxdz=80; //number of frames to take of the average for the SD projection, e.g. 40*10= 400frame projection (both of these are ~2-5 minutes depending)
-structavg=210; //number of frames to take of the average for strucutral image (should be large on the order of >10 minutes)
+SDp=10; //number of frames to take of the average for the SD projection, e.g. 40*10= 400frame projection
+maxdz=10; //number of frames to take of the average for the SD projection, e.g. 40*10= 400frame projection (both of these are ~2-5 minutes depending)
+structavg=20; //number of frames to take of the average for strucutral image (should be large on the order of >10 minutes)
 RG=1; //set this to 1 to make an RG composite image to identify SPBNs
 fullmerge=1; //set this to 1 to make a single tiff which contains all the full frame rate files for each plane. 
  
@@ -63,7 +63,7 @@ for(p=0; p<planes; p++) {
 		//actually run the grouped Z projection
 		mid="projection=[Average Intensity] group="+avg;
 		run("Grouped Z Project...", mid);
-		close("F*");
+		close("f*");
 		close("S*");
 		
 		//Saving the split stacks to the hardrive
@@ -274,6 +274,7 @@ if (RG==1) {
 			mid="projection=[Average Intensity] group="+avg;
 			run("Grouped Z Project...", mid);
 			close("S*");
+			close("f*");
 			
 			//Saving the split stacks to the hardrive
 			SaveD=ParentD+"plane"+p+"/"+avg+"x avg Red/";
