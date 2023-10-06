@@ -1,16 +1,24 @@
 //Before using make sure to copy the Garbage.ijm macro into the macro folder in order to remove the memory leaks
 //save location. Need to change this depending on the computer and intention
-ParentD="C:/Users/warwickc/Desktop/Suite2p run/suite2p/"; //the directory of your suite2p folder which contains stabilized files for averaging
-planes=2; //Number of Z planes;
-avg=10; //grouped Z amount average.
+ParentD="F:/#489/suite2p rerun/Suite2p test/"; //the directory of your suite2p folder which contains stabilized files for averaging
+planes=5; //Number of Z planes;
+batchsize=2000; //frames within each file (this is set in suite2p)
+avg=20; //grouped Z amount average.
 dzt=1; //set this to 1 to make a derivative image of the average image. Otherwise set it to 0 to not. If using, it applies a custom LUT which you'll need to install.
 summary=1; //set this to 1 to make summary images
 SDp=10; //number of frames to take of the average for the SD projection, e.g. 40*10= 400frame projection
 maxdz=10; //number of frames to take of the average for the SD projection, e.g. 40*10= 400frame projection (both of these are ~2-5 minutes depending)
 structavg=20; //number of frames to take of the average for strucutral image (should be large on the order of >10 minutes)
 RG=1; //set this to 1 to make an RG composite image to identify SPBNs
-fullmerge=1; //set this to 1 to make a single tiff which contains all the full frame rate files for each plane. 
- 
+fullmerge=0; //set this to 1 to make a single tiff which contains all the full frame rate files for each plane. 
+avg_hyperstack=1; //set this to 1 to pull the averages into a single hyperstack
+LUT=1; //enable application of custom LUT to specific outputs
+MontageFull=0; //whether to montage the output files. CAUTION: This is not RAM otimized, check file sizes before using.
+		//With montaging I've only tested 5 and 6 planes, haven't tested above or below this
+MontageAvg=0; //Montage the average only
+tiling=0; //whether to montage as a single column (set to 0) or arrange in a grid, eg 3x2
+dz=0; //set this to 1 to make a derivative image of the MONTAGE or 0 to not. If using, it applies a custom LUT whicNormalized.h you'll need to install.
+
  
 ResidualD=ParentD+"residual/"; //where the residual/leftover frames are stored 
 File.makeDirectory(ResidualD)  //make the new directory
@@ -22,15 +30,23 @@ for(p=0; p<planes; p++) {
 	list=getFileList(InputPath);
 	print(list.length);
 	//for each file within the specific plane
+	filename=0;
+	frame=0;
 	for (i=0; i<list.length; i++) { 
-		file=list[i];
-		npath=InputPath+file;
-		print(npath);
+		if (i==0) {
+			filename = "file000_chan0.tif";
+		} else {
+			frame = i*batchsize;
+			filename = "file" + frame + "_chan0.tif";
+		}
+		npath=InputPath+filename;
 		open(npath);
+		print("directory of file",i," is ",npath);
 		//checks for a residual file, opens, and the concatenates it to the opened file
 		if (File.exists(ResidualD+"/residual.tif")) {
 			open(ResidualD+"/residual.tif");
 			concat="  image1=residual.tif image2="+file;
+			print("residual exists")
 			print(concat);
 			run("Concatenate...", concat);
 			rename(file);
@@ -60,13 +76,13 @@ for(p=0; p<planes; p++) {
 			saveAs("Tiff", ResidualD+"residual");
 			close();
 			}
-		//actually run the grouped Z projection
+		//actually run the average grouped Z projection
 		mid="projection=[Average Intensity] group="+avg;
 		run("Grouped Z Project...", mid);
 		close("f*");
 		close("S*");
 		
-		//Saving the split stacks to the hardrive
+		//Saving the averaged files to the hardrive
 		SaveD=ParentD+"plane"+p+"/"+avg+"x avg/";
 		print("Save directory:", SaveD);
 		File.makeDirectory(SaveD)
@@ -79,6 +95,9 @@ for(p=0; p<planes; p++) {
 		File.openSequence(SaveD);
 		midparent=ParentD+"plane"+p+"/Plane"+p+" "+avg+"x avg";
 		print("merged file save location:", midparent);
+		if (LUT==1) {
+			run("oslo");
+		}
 		saveAs("Tiff", midparent);
 
 //if a Z derivative is desired, then this runs
@@ -118,7 +137,7 @@ for(p=0; p<planes; p++) {
 					run("Make Substack...", name);
 					close("\\Others");
 					}
-			//actually run the grouped Z projection
+			//grouped MaxZ projection
 				mid="projection=[Max Intensity] group="+maxdz;
 				run("Grouped Z Project...", mid);
 				zdmaxtparent=ParentD+"plane"+p+"/Plane"+p+" "+avg+"x avg dZMAX";
@@ -138,7 +157,7 @@ for(p=0; p<planes; p++) {
 			print("original slices",slices);
 			residual=slices-floor(slices);
 			roundslices=floor(slices);
-			//if the stack does not divide in evenly (i.e. there is a residual) cut off the remainder and save it for later
+			//if the stack does not divide in evenly (i.e. there is a residual) cut off the remainder
 			if (residual!=0) {
 				endofstack=roundslices*SDp;
 				start=1;
@@ -147,11 +166,17 @@ for(p=0; p<planes; p++) {
 				run("Make Substack...", name);
 				close("\\Others");
 				}
-		//actually run the grouped Z projection
+		//Grouped Standard Deviation projection
 			mid="projection=[Standard Deviation] group="+SDp;
 			run("Grouped Z Project...", mid);
 			zdmaxtparent=ParentD+"plane"+p+"/Plane"+p+" "+avg+"x avg SD";
+			if (LUT==1) {
+				run("oslo");
+			}
 			saveAs("Tiff", zdmaxtparent);
+			run("Z Project...", "projection=[Max Intensity]");
+			zdmaxtparent=ParentD+"plane"+p+"/Plane"+p+" CellPose";
+			saveAs("Tiff", zdmaxtparent);			
 			close("*");
 		}
 		//make the structural average
@@ -166,7 +191,7 @@ for(p=0; p<planes; p++) {
 			print("original slices",slices);
 			residual=slices-floor(slices);
 			roundslices=floor(slices);
-			//if the stack does not divide in evenly (i.e. there is a residual) cut off the remainder and save it for later
+			//if the stack does not divide in evenly (i.e. there is a residual) cut off the remainder
 			if (residual!=0) {
 				endofstack=roundslices*structavg;
 				start=1;
@@ -202,6 +227,7 @@ for(p=0; p<planes; p++) {
 		File.delete(ResidualD+"/residual.tif");
 		runMacro("Garbage");
 	}
+//at this point you're done with making the averages so you need to delete the files and then the folder you created to house them
 SaveD=ParentD+"plane"+p+"/"+avg+"x avg/";
 InputPath=SaveD;
 list=getFileList(InputPath);
@@ -213,6 +239,7 @@ for (i=0; i<list.length; i++) {
 }
 File.delete(SaveD);
 runMacro("Garbage");
+
 if (fullmerge==1) {
 	SaveD=ParentD+"plane"+p+"/reg_tif/";
 	File.openSequence(SaveD);
@@ -223,6 +250,7 @@ if (fullmerge==1) {
 }
 File.delete(ResidualD+"/residual.tif");		
 runMacro("Garbage");
+//end of main program
 
 //for each red channel plane
 if (RG==1) {
@@ -233,10 +261,15 @@ if (RG==1) {
 		print(list.length);
 		//for each file within the specific plane
 		for (i=0; i<list.length; i++) { 
-			file=list[i];
+			if (i==0) {
+				file="file000_chan1.tif";
+			} else {
+				frame = i*batchsize;
+				file = "file" + frame + "_chan1.tif";
+			}
 			npath=InputPath+file;
-			print(npath);
 			open(npath);
+			print("directory of file",i," is ",npath);
 			//checks for a residual file, opens, and the concatenates it to the opened file
 			if (File.exists(ResidualD+"/residual.tif")) {
 				open(ResidualD+"/residual.tif");
@@ -312,7 +345,7 @@ if (RG==1) {
 				close("\\Others");
 				rename("Red");
 				}
-		//actually run the grouped projection
+		//actually run the grouped projection 
 			mid="projection=[Average Intensity] group="+structavg;
 			run("Grouped Z Project...", mid);
 			rename("Red");
@@ -338,7 +371,7 @@ if (RG==1) {
 				close("*P");
 				rename("Plane");
 				}
-		//actually run the grouped projection
+		//actually run the grouped projection for the structural average
 			mid="projection=[Average Intensity] group="+structavg;
 			run("Grouped Z Project...", mid);
 			rename("Green");
@@ -378,7 +411,173 @@ refimg=ParentD+"RG Refence.tif";
 saveAs("Tiff", refimg);	
 close("*");
 }
+
+if (avg_hyperstack==1) {
+	for(p=0; p<planes; p++) {
+		npath=ParentD+"plane"+p+"/Plane"+p+" "+avg+"x avg.tif";
+		open(npath);
+		}
+	run("Concatenate...", "all_open open");
+	run("Re-order Hyperstack ...", "channels=[Channels (c)] slices=[Frames (t)] frames=[Slices (z)]");
+	if (LUT==1) {
+		run("oslo");
+	}
+	refimg=ParentD+"Hyperstack "+avg+"x avg.tif";
+	saveAs("Tiff", refimg);
+	run("Z Project...", "projection=[Max Intensity] all");
+	refimg=ParentD+"Hyperstack "+avg+"x avg MaxZ.tif";
+	saveAs("Tiff", refimg);	
+	close("*");
+}
+
 //at this point it's finished all planes and images and this removes the directory it created
 	File.delete(ResidualD+"/residual.tif");
 	File.delete(ResidualD);
 	print("All planes processed");
+
+
+
+//////Montage Maker/////////
+if (MontageFull==1) {
+	runMacro("Garbage");
+	for(p=0; p<planes; p++) {
+		InputPath=ParentD+"plane"+p+"/Plane"+p+" "+"Full.tif";
+		print("open directory:",InputPath);
+		open(InputPath);
+		List.set(p, File.name);
+	}
+	if (planes/2!=(round(planes/2))) {
+		print("odd number of planes, add an extra");
+		print("p value",p);
+		open(InputPath);
+		rename("plane"+p+"/Plane"+p+" "+"Full.tif");
+		t=getInfo("window.title");
+		List.set(p, t);
+	}
+	print(List.size);
+	concat="open";
+	for (i = 0; i <List.size; i++) {
+		string=List.get(i);
+		print("1st name",string);
+		imagei=" image"+(i+1)+"=["+string+"]";
+		print(imagei);
+		concat=concat+imagei;
+		print(concat);
+		
+	}
+	
+	run("Concatenate...", concat);
+	
+	//run("Concatenate...", "open image1=[Plane0 40x avg.tif] image2=[Plane1 40x avg.tif] image3=[Plane2 40x avg.tif] image4=[Plane3 40x avg.tif] image5=[Plane4 40x avg.tif]");
+	
+	run("Re-order Hyperstack ...", "channels=[Channels (c)] slices=[Frames (t)] frames=[Slices (z)]");
+	rename("Interleaved.tif");
+	Stack.getDimensions(Wd,Ht,Ch,Sl,F);
+	print("number of frames",F);
+	run("Hyperstack to Stack");
+	run("Make Montage...", "columns=2 rows=3 scale=1 border=1");
+	rename("Template.tif");
+	selectWindow("Interleaved.tif");
+	run("Slice Remover", "first=1 last=6 increment=1");
+	runMacro("Garbage");
+	for (i=2; i<F; i++) {
+		selectWindow("Interleaved.tif");
+		run("Make Montage...", "columns=2 rows=3 scale=1 border=1");
+		run("Concatenate...", "  title=Template.tif image1=Template.tif image2=Montage image3=[-- None --]");
+		selectWindow("Interleaved.tif");
+		run("Slice Remover", "first=1 last=6 increment=1");
+		}
+		
+	close("Interleaved.tif");
+	//blank out the extra plane if there is an odd number
+	if (planes==5) {
+		Stack.getDimensions(Wd,Ht,Ch,Sl,F);
+		makeRectangle(1+((Wd-1)/2), (1+2*(Ht)/3), ((Wd)/2), ((Ht)/3)); //goes xy coorindate, then xy size
+		setForegroundColor(15, 15, 15);
+		run("Fill", "stack");
+		}
+	if (LUT==1) {
+		run("oslo");
+	}
+	saveAs("Tiff", ParentD+"Montage Full");
+	close("*");
+}
+
+
+if (MontageAvg==1) {
+	runMacro("Garbage");
+	//open the averages from each folder
+	for(p=0; p<planes; p++) {
+		InputPath=ParentD+"plane"+p+"/Plane"+p+" "+avg+"x avg.tif";
+		print("open directory:",InputPath);
+		open(InputPath);
+		List.set(p, File.name);
+	}
+	if (planes/2!=(round(planes/2))) {
+		print("odd number of planes, add an extra");
+		print("p value",p);
+		open(InputPath); //if it's an odd number, open the last file (as a dummy) to make the montage work correctly
+		rename("plane"+p+"/Plane"+p+" "+avg+"x avg.tif");
+		t=getInfo("window.title");
+		List.set(p, t);
+	}
+	print(List.size);
+	concat="open";
+	for (i = 0; i <List.size; i++) {
+		string=List.get(i);
+		print("1st name",string);
+		imagei=" image"+(i+1)+"=["+string+"]";
+		print(imagei);
+		concat=concat+imagei;
+		print(concat);	
+	}
+	run("Concatenate...", concat);
+	run("Re-order Hyperstack ...", "channels=[Channels (c)] slices=[Frames (t)] frames=[Slices (z)]");
+	rename("Interleaved.tif");
+	Stack.getDimensions(Wd,Ht,Ch,Sl,F);
+	print("number of frames",F);
+	run("Hyperstack to Stack");
+	run("Make Montage...", "columns=2 rows=3 scale=1 border=1");
+	rename("Template.tif");
+	selectWindow("Interleaved.tif");
+	run("Slice Remover", "first=1 last=6 increment=1");
+	runMacro("Garbage");
+	for (i=2; i<F; i++) {
+		selectWindow("Interleaved.tif");
+		run("Make Montage...", "columns=2 rows=3 scale=1 border=1");
+		run("Concatenate...", "  title=Template.tif image1=Template.tif image2=Montage image3=[-- None --]");
+		selectWindow("Interleaved.tif");
+		run("Slice Remover", "first=1 last=6 increment=1");
+		}
+		
+	close("Interleaved.tif");
+	//blank out the extra plane if there is an odd number
+	if (planes==5) {
+		Stack.getDimensions(Wd,Ht,Ch,Sl,F);
+		makeRectangle(1+((Wd-1)/2), (1+2*(Ht)/3), ((Wd)/2), ((Ht)/3)); //goes xy coorindate, then xy size
+		setForegroundColor(15, 15, 15);
+		run("Fill", "stack");
+		}
+	if (LUT==1) {
+		run("oslo");
+	}
+	saveAs("Tiff", ParentD+"Montage "+avg+"x avg.tif");
+	if (dz==1) {
+		run("FeatureJ Derivatives", "x-order=0 y-order=0 z-order=1 smoothing=1.0");
+		close("\\Others");
+		run("Min...", "value=0 stack");
+		run("Z Project...", "projection=[Max Intensity]");
+		run("Enhance Contrast", "saturated=0.05"); //this finds the 'right' contrast for the dZ. 
+		//The number of saturated pixels of the MaxZ can be changed, this might be changed.
+		getMinAndMax(min, max);
+		close();
+		setMinAndMax(0, max);//set the maxZ contrast to the whole image
+		run("8-bit"); //convert the 32bit image to 8bit to save space
+		run("32_colors edit"); //this is a custom LUT I made, you may need to install it
+		zdparent=ParentD+"Montage "+avg+"x avg dZ";
+		saveAs("Tiff", zdparent);
+		close("*");
+			}
+	runMacro("Garbage");
+	close("*");
+}
