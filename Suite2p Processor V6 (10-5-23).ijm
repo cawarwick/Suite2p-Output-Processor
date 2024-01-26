@@ -1,8 +1,8 @@
 //Before using make sure to copy the Garbage.ijm macro into the macro folder in order to remove the memory leaks
 //save location. Need to change this depending on the computer and intention
-ParentD="F:/#489/suite2p rerun/Suite2p test/"; //the directory of your suite2p folder which contains stabilized files for averaging
-planes=5; //Number of Z planes;
-batchsize=2000; //frames within each file (this is set in suite2p)
+ParentD="Y:/DRGS project/#505 12-18-23/SDH Recording/Final FOV/Functional/P4 only/suite2p/"; //the directory of your suite2p folder which contains stabilized files for averaging
+planes=1; //Number of Z planes;
+batchsize=2500; //frames within each file (this is set in suite2p)
 avg=20; //grouped Z amount average.
 dzt=1; //set this to 1 to make a derivative image of the average image. Otherwise set it to 0 to not. If using, it applies a custom LUT which you'll need to install.
 summary=1; //set this to 1 to make summary images
@@ -10,8 +10,8 @@ SDp=10; //number of frames to take of the average for the SD projection, e.g. 40
 maxdz=10; //number of frames to take of the average for the SD projection, e.g. 40*10= 400frame projection (both of these are ~2-5 minutes depending)
 structavg=20; //number of frames to take of the average for strucutral image (should be large on the order of >10 minutes)
 RG=1; //set this to 1 to make an RG composite image to identify SPBNs
-fullmerge=0; //set this to 1 to make a single tiff which contains all the full frame rate files for each plane. 
-avg_hyperstack=1; //set this to 1 to pull the averages into a single hyperstack
+fullmerge=1; //set this to 1 to make a single tiff which contains all the full frame rate files for each plane. 
+avg_hyperstack=0; //set this to 1 to pull the averages into a single hyperstack
 LUT=1; //enable application of custom LUT to specific outputs
 MontageFull=0; //whether to montage the output files. CAUTION: This is not RAM otimized, check file sizes before using.
 		//With montaging I've only tested 5 and 6 planes, haven't tested above or below this
@@ -34,10 +34,10 @@ for(p=0; p<planes; p++) {
 	frame=0;
 	for (i=0; i<list.length; i++) { 
 		if (i==0) {
-			filename = "file000_chan0.tif";
+			filename = "file00000_chan0.tif";
 		} else {
 			frame = i*batchsize;
-			filename = "file" + frame + "_chan0.tif";
+			filename = "file00" + frame + "_chan0.tif";
 		}
 		npath=InputPath+filename;
 		open(npath);
@@ -262,10 +262,10 @@ if (RG==1) {
 		//for each file within the specific plane
 		for (i=0; i<list.length; i++) { 
 			if (i==0) {
-				file="file000_chan1.tif";
+				file="file00000_chan1.tif";
 			} else {
 				frame = i*batchsize;
-				file = "file" + frame + "_chan1.tif";
+				file = "file00" + frame + "_chan1.tif";
 			}
 			npath=InputPath+file;
 			open(npath);
